@@ -1,17 +1,17 @@
 package info.cmlubinski.liftencryptedfields
 
 import java.security.SecureRandom
-import net.liftweb.record.field.BinaryField
-import net.liftweb.record.Record
-import net.liftweb.util.ControlHelpers.tryo
+import net.liftweb.record.{OwnedField, Record}
 import net.liftweb.common.Box
+import net.liftweb.util.ControlHelpers.tryo
 import org.bouncycastle.crypto.engines.AESEngine
 import org.bouncycastle.crypto.modes.GCMBlockCipher
 import org.bouncycastle.crypto.params.{KeyParameter, ParametersWithIV}
 
-
-class AESField[OwnerType <: Record[OwnerType]](rec:OwnerType) extends BinaryField(rec) with HasKey {
-  def binEncryptSet(plainText:Array[Byte]) = {
+trait AESField[OwnerType <: Record[OwnerType]] extends OwnedField[OwnerType] with HasKey {
+  protected def binEncryptSet(plainText:Array[Byte]):OwnerType
+  protected def binDecrypt():Box[Array[Byte]]
+  protected def AESencrypt(plainText:Array[Byte]) = {
     val iv = new Array[Byte](32)
     new SecureRandom().nextBytes(iv)
 
@@ -21,13 +21,13 @@ class AESField[OwnerType <: Record[OwnerType]](rec:OwnerType) extends BinaryFiel
     val output = new Array[Byte](encrypter.getOutputSize(plainText.length))
     val cipherLength = encrypter.processBytes(plainText, 0, plainText.length, output, 0)
     encrypter.doFinal(output, cipherLength)
-    apply(Array.concat(iv, output))
+    Array.concat(iv, output)
   }
-  def binDecrypt() = tryo {
+  protected def AESdecrypt(cipherTextWithIV:Array[Byte]) = tryo {
     val iv = new Array[Byte](32)
-    Array.copy(get, 0, iv, 0, 32)
-    val cipherText = new Array[Byte](get.length - 32)
-    Array.copy(get, 32, cipherText, 0, get.length - 32)
+    Array.copy(cipherTextWithIV, 0, iv, 0, 32)
+    val cipherText = new Array[Byte](cipherTextWithIV.length - 32)
+    Array.copy(cipherTextWithIV, 32, cipherText, 0, cipherTextWithIV.length - 32)
 
     val decrypter = new GCMBlockCipher(new AESEngine())
     decrypter.init(false, new ParametersWithIV(new KeyParameter(fieldKey), iv))
@@ -37,7 +37,8 @@ class AESField[OwnerType <: Record[OwnerType]](rec:OwnerType) extends BinaryFiel
     output
   }
 }
-abstract class TypedAES[FieldType, OwnerType <: Record[OwnerType]](rec:OwnerType) extends AESField[OwnerType](rec) {
+
+trait TypedAESField[FieldType, OwnerType <: Record[OwnerType]] extends AESField[OwnerType] {
   def toBytes(data:FieldType):Array[Byte]
   def encryptSet(data:FieldType):OwnerType = binEncryptSet(toBytes(data))
   def <<<(data:FieldType) = encryptSet(data)
@@ -47,8 +48,4 @@ abstract class TypedAES[FieldType, OwnerType <: Record[OwnerType]](rec:OwnerType
   def >>>() = decrypt()
   def decrypt_!():FieldType = decrypt.open_!
   def >>!() = decrypt_!
-}
-class AESStringField[OwnerType <: Record[OwnerType]](rec:OwnerType) extends TypedAES[String, OwnerType](rec) {
-  def toBytes(data:String) = data.getBytes("UTF-8")
-  def fromBytes(bytes:Array[Byte]) = tryo { new String(bytes, "UTF-8") }
 }
