@@ -14,3 +14,5 @@ class OptionalAESField[OwnerType <: Record[OwnerType]](rec:OwnerType) extends Op
 }
 class OptionalAESStringField[OwnerType <: Record[OwnerType]](rec:OwnerType) extends OptionalAESField[OwnerType](rec)
   with StringTypedAESField[OwnerType]
+class OptionalAESEnumField[OwnerType <: Record[OwnerType], EnumType <: Enumeration](rec:OwnerType, 
+  override val enumRef:EnumType) extends OptionalAESField[OwnerType](rec) with EnumTypedAESField[OwnerType, EnumType]
