@@ -1,6 +1,5 @@
 package info.cmlubinski.liftencryptedfields
 
-import java.security.SecureRandom
 import net.liftweb.record.{OwnedField, Record}
 import net.liftweb.common.Box
 import net.liftweb.util.ControlHelpers.tryo
@@ -13,7 +12,7 @@ trait AESField[OwnerType <: Record[OwnerType]] extends OwnedField[OwnerType] wit
   protected def binDecrypt():Box[Array[Byte]]
   protected def AESencrypt(plainText:Array[Byte]) = {
     val iv = new Array[Byte](32)
-    new SecureRandom().nextBytes(iv)
+    Random.nextBytes(iv)
 
     val encrypter = new GCMBlockCipher(new AESEngine())
     encrypter.init(true, new ParametersWithIV(new KeyParameter(fieldKey), iv))
