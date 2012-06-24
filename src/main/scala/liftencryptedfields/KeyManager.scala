@@ -22,9 +22,12 @@ object KeyManager {
 trait HasKey {
   self:OwnedField[_ <: Record[_]] =>
   lazy val fieldKey = {
-    val classname = owner.meta.getClass.getSimpleName.toLowerCase
+    val classname = owner.getClass.getSimpleName.toLowerCase
     //  strip the $
-    val recordName = classname.take(classname.length - 1)
+    val recordName = {
+      if (owner.meta == owner) classname.take(classname.length - 1)
+      else classname
+    }
     KeyManager.getKey(recordName + "." + name)
   }
 }
