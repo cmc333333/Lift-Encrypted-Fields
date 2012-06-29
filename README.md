@@ -2,8 +2,6 @@
 
 Adds Authenticated encryption to Lift Record fields.
 
-## Todo: Explain KeyManager
-
 ## Usage
 ```scala
 //  Skipping meta-record info
@@ -19,4 +17,21 @@ val someBytes = u.email.get
 someBytes(5) = 102
 u.email(someBytes)
 u.email >>> //  Failure, invalid authentication
+```
+
+## Keymanager
+AES keys should be stored in a JCEKS-formated keystore (as would be created by the keytool utility.) Each key is
+assumed to have the alias "modelName.fieldName" and using the same password as the keystore.
+
+To generate a key:
+```
+> keytool -genseckey -keyalg AES -keysize 256 \
+  -storetype JCEKS -keystore /path/to/keystore.jck \
+  -storepass password -alias user.email
+```
+
+Keymanager should then be configured with the following in your Lift properties file:
+```
+keymanager.file=/path/to/keystore.jck
+keymanager.pass=password
 ```
