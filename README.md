@@ -24,14 +24,14 @@ AES keys should be stored in a JCEKS-formated keystore (as would be created by t
 assumed to have the alias "modelName.fieldName" and using the same password as the keystore.
 
 To generate a key:
-```
+```bash
 > keytool -genseckey -keyalg AES -keysize 256 \
   -storetype JCEKS -keystore /path/to/keystore.jck \
   -storepass password -alias user.email
 ```
 
 Keymanager should then be configured with the following in your Lift properties file:
-```
+```ini
 keymanager.file=/path/to/keystore.jck
 keymanager.pass=password
 ```
