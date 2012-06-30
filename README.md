@@ -1,6 +1,7 @@
 # Lift Encrypted Fields
 
-Adds Authenticated encryption to Lift Record fields.
+Adds Authenticated encryption to Lift Record fields. For a brief discussion of authenticated encryption, see my
+[write-up](http://cmlubinski.info/cryptography-and-security-coders#encryption-modes]).
 
 ## Usage
 ```scala
