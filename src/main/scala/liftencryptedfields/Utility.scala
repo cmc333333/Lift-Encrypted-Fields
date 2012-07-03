@@ -2,8 +2,10 @@ package info.cmlubinski.liftencryptedfields
 
 import java.security.SecureRandom
 import net.liftweb.util.ControlHelpers.tryo
+import net.liftweb.util.SecurityHelpers
 import org.bouncycastle.crypto.digests.SHA512Digest
 import org.bouncycastle.crypto.engines.AESEngine
+import org.bouncycastle.crypto.generators.PKCS5S2ParametersGenerator
 import org.bouncycastle.crypto.macs.HMac
 import org.bouncycastle.crypto.modes.GCMBlockCipher
 import org.bouncycastle.crypto.params.{KeyParameter, ParametersWithIV}
@@ -56,4 +58,19 @@ object Utility {
     macer.doFinal(output, 0)
     output
   }
+
+  def pbdk2(password:Array[Byte], iterationCount:Int = 10000) = {
+    val salt = new Array[Byte](32)
+    Random.nextBytes(salt)
+
+    val generator = new PKCS5S2ParametersGenerator()
+    generator.init(password, salt, iterationCount)
+    (salt, generator.generateDerivedParameters(512).asInstanceOf[KeyParameter].getKey)
+  }
+  def pbdk2Cmp(guess:Array[Byte], salt:Array[Byte], stored:Array[Byte], iterationCount:Int = 10000) = {
+    val generator = new PKCS5S2ParametersGenerator()
+    generator.init(guess, salt, iterationCount)
+    SecurityHelpers.secureEquals(stored, generator.generateDerivedParameters(512).asInstanceOf[KeyParameter].getKey)
+  }
+
 }

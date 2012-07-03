@@ -10,5 +10,8 @@ abstract class NonNullHashField[OwnerType <: Record[OwnerType]](rec:OwnerType) e
   protected def binHashSet(plainText:Array[Byte]) = apply(SecurityHelpers.base64EncodeURLSafe(binHash_?(plainText))) 
 }
 
+/**
+ * DO NOT USE THIS FOR PASSWORDS. Instead, use pbkdf2.
+ **/
 abstract class HashStringField[OwnerType <: Record[OwnerType]](rec:OwnerType) extends NonNullHashField[OwnerType](rec)
   with StringConversion
