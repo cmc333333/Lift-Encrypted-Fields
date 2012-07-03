@@ -8,12 +8,11 @@ trait AESField[OwnerType <: Record[OwnerType]] extends OwnedField[OwnerType] wit
   protected def binDecrypt():Box[Array[Byte]]
 }
 
-trait TypedAESField[FieldType, OwnerType <: Record[OwnerType]] extends AESField[OwnerType] {
-  def toBytes(data:FieldType):Array[Byte]
+trait TypedAESField[FieldType, OwnerType <: Record[OwnerType]] extends AESField[OwnerType] 
+  with TypedConversion[FieldType] {
   def encryptSet(data:FieldType):OwnerType = binEncryptSet(toBytes(data))
   def <<<(data:FieldType) = encryptSet(data)
 
-  def fromBytes(bytes:Array[Byte]):Box[FieldType]
   def decrypt():Box[FieldType] = binDecrypt.flatMap(pt => fromBytes(pt))
   def >>>() = decrypt()
   def decrypt_!():FieldType = decrypt.open_!

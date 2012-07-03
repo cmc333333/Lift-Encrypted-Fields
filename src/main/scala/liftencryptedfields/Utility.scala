@@ -2,7 +2,9 @@ package info.cmlubinski.liftencryptedfields
 
 import java.security.SecureRandom
 import net.liftweb.util.ControlHelpers.tryo
+import org.bouncycastle.crypto.digests.SHA512Digest
 import org.bouncycastle.crypto.engines.AESEngine
+import org.bouncycastle.crypto.macs.HMac
 import org.bouncycastle.crypto.modes.GCMBlockCipher
 import org.bouncycastle.crypto.params.{KeyParameter, ParametersWithIV}
 
@@ -42,6 +44,16 @@ object Utility {
     val output = new Array[Byte](decrypter.getOutputSize(cipherText.length))
     val cipherLength = decrypter.processBytes(cipherText, 0, cipherText.length, output, 0)
     decrypter.doFinal(output, cipherLength);
+    output
+  }
+
+  def hmac(plainText:Array[Byte], key:Array[Byte]) = {
+    val macer = new HMac(new SHA512Digest())
+    macer.init(new KeyParameter(key))
+    macer.update(plainText, 0, plainText.length)
+
+    val output = new Array[Byte](macer.getMacSize())
+    macer.doFinal(output, 0)
     output
   }
 }
