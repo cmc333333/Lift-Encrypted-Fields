@@ -5,13 +5,13 @@ import net.liftweb.record.Record
 import net.liftweb.util.SecurityHelpers
 
 //  86 = Ceil(512 (hash output) / 6 (base64 bits))
-abstract class NonNullHashField[OwnerType <: Record[OwnerType]](rec:OwnerType) extends StringField(rec, 86)
-  with HashField[OwnerType] {
+class NonNullHashField[OwnerType <: Record[OwnerType]](rec:OwnerType, override val systemKey:Array[Byte]) 
+  extends StringField(rec, 86) with HashField[OwnerType] {
   protected def binHashSet(plainText:Array[Byte]) = apply(SecurityHelpers.base64EncodeURLSafe(binHash_?(plainText))) 
 }
 
 /**
  * DO NOT USE THIS FOR PASSWORDS. Instead, use pbkdf2.
  **/
-abstract class HashStringField[OwnerType <: Record[OwnerType]](rec:OwnerType) extends NonNullHashField[OwnerType](rec)
-  with StringConversion
+class HashStringField[OwnerType <: Record[OwnerType]](rec:OwnerType, override val systemKey:Array[Byte]) 
+  extends NonNullHashField[OwnerType](rec, systemKey) with StringConversion
