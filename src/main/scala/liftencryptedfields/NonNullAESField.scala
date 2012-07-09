@@ -10,7 +10,8 @@ class NonNullAESField[OwnerType <: Record[OwnerType]](rec:OwnerType) extends Bin
   def binDecrypt() = Utility.aesDecrypt(get, fieldKey)
 }
 class AESStringField[OwnerType <: Record[OwnerType]](rec:OwnerType) extends NonNullAESField[OwnerType](rec)
-  with StringConversion
+  with StringConversion with TypedAESField[String, OwnerType]
 
 class AESEnumField[OwnerType <: Record[OwnerType], EnumType <: Enumeration](rec:OwnerType, 
-  override val enumRef:EnumType) extends NonNullAESField[OwnerType](rec) with EnumConversion[EnumType]
+  override val enumRef:EnumType) extends NonNullAESField[OwnerType](rec) with EnumConversion[EnumType] 
+  with TypedAESField[EnumType#Value, OwnerType]

@@ -12,4 +12,4 @@ class OptionalHashField[OwnerType <: Record[OwnerType]](rec:OwnerType, override 
   ))
 }
 class OptionalHashStringField[OwnerType <: Record[OwnerType]](rec:OwnerType, override val systemKey:Array[Byte]) 
-  extends OptionalHashField[OwnerType](rec, systemKey) with StringConversion
+  extends OptionalHashField[OwnerType](rec, systemKey) with TypedHashField[String, OwnerType] with StringConversion

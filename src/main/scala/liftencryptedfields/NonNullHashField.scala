@@ -14,4 +14,4 @@ class NonNullHashField[OwnerType <: Record[OwnerType]](rec:OwnerType, override v
  * DO NOT USE THIS FOR PASSWORDS. Instead, use pbkdf2.
  **/
 class HashStringField[OwnerType <: Record[OwnerType]](rec:OwnerType, override val systemKey:Array[Byte]) 
-  extends NonNullHashField[OwnerType](rec, systemKey) with StringConversion
+  extends NonNullHashField[OwnerType](rec, systemKey) with TypedHashField[String, OwnerType] with StringConversion
