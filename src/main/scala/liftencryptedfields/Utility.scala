@@ -59,18 +59,23 @@ object Utility {
     output
   }
 
-  def pbdk2(password:Array[Byte], iterationCount:Int = 10000) = {
+  def pbkdf2(password:Array[Byte], iterationCount:Int = 10000) = {
     val salt = new Array[Byte](32)
     Random.nextBytes(salt)
 
     val generator = new PKCS5S2ParametersGenerator()
     generator.init(password, salt, iterationCount)
-    (salt, generator.generateDerivedParameters(512).asInstanceOf[KeyParameter].getKey)
+    Array.concat(salt, generator.generateDerivedParameters(512).asInstanceOf[KeyParameter].getKey)
   }
-  def pbdk2Cmp(guess:Array[Byte], salt:Array[Byte], stored:Array[Byte], iterationCount:Int = 10000) = {
+  def pbkdf2Cmp(guess:Array[Byte], stored:Array[Byte], iterationCount:Int = 10000) = {
+    require (stored.length > 32, "stored not large enough")
+    val salt = new Array[Byte](32)
+    val hash = new Array[Byte](stored.length - 32)
+    Array.copy(stored, 0, salt, 0, 32)
+    Array.copy(stored, 32, hash, 0, stored.length - 32)
     val generator = new PKCS5S2ParametersGenerator()
     generator.init(guess, salt, iterationCount)
-    SecurityHelpers.secureEquals(stored, generator.generateDerivedParameters(512).asInstanceOf[KeyParameter].getKey)
+    SecurityHelpers.secureEquals(hash, generator.generateDerivedParameters(512).asInstanceOf[KeyParameter].getKey)
   }
 
 }
