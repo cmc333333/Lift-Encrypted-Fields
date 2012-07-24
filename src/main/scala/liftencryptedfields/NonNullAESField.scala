@@ -15,3 +15,8 @@ class AESStringField[OwnerType <: Record[OwnerType]](rec:OwnerType) extends NonN
 class AESEnumField[OwnerType <: Record[OwnerType], EnumType <: Enumeration](rec:OwnerType, 
   override val enumRef:EnumType) extends NonNullAESField[OwnerType](rec) with EnumConversion[EnumType] 
   with TypedAESField[EnumType#Value, OwnerType]
+
+class AESIntField[OwnerType <: Record[OwnerType]](rec:OwnerType) extends NonNullAESField[OwnerType](rec) 
+  with IntConversion with TypedAESField[Int, OwnerType]
+class AESLongField[OwnerType <: Record[OwnerType]](rec:OwnerType) extends NonNullAESField[OwnerType](rec) 
+  with LongConversion with TypedAESField[Long, OwnerType]

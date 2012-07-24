@@ -1,5 +1,6 @@
 package info.cmlubinski.liftencryptedfields
 
+import java.nio.ByteBuffer
 import net.liftweb.record.Record
 import net.liftweb.util.ControlHelpers.tryo
 import net.liftweb.common.Box
@@ -16,4 +17,14 @@ trait EnumConversion[EnumType <: Enumeration] extends TypedConversion[EnumType#V
   protected val enumRef:EnumType
   def toBytes(data:EnumType#Value) = Array[Byte](data.id.toByte)
   def fromBytes(bytes:Array[Byte]) = tryo { enumRef(bytes(0).toInt) }
+}
+trait IntConversion extends TypedConversion[Int] {
+  //  all ints in the JVM are 4 bytes = 32 bits
+  def toBytes(data:Int) = ByteBuffer.allocateDirect(4).putInt(data).array()
+  def fromBytes(bytes:Array[Byte]) = tryo { ByteBuffer.wrap(bytes).getInt }
+}
+trait LongConversion extends TypedConversion[Long] {
+  //  all ints in the JVM are 8 bytes = 64 bit
+  def toBytes(data:Long) = ByteBuffer.allocateDirect(8).putLong(data).array()
+  def fromBytes(bytes:Array[Byte]) = tryo { ByteBuffer.wrap(bytes).getLong }
 }
