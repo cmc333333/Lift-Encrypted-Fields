@@ -20,11 +20,11 @@ trait EnumConversion[EnumType <: Enumeration] extends TypedConversion[EnumType#V
 }
 trait IntConversion extends TypedConversion[Int] {
   //  all ints in the JVM are 4 bytes = 32 bits
-  def toBytes(data:Int) = ByteBuffer.allocateDirect(4).putInt(data).array()
+  def toBytes(data:Int) = ByteBuffer.allocate(4).putInt(data).array()
   def fromBytes(bytes:Array[Byte]) = tryo { ByteBuffer.wrap(bytes).getInt }
 }
 trait LongConversion extends TypedConversion[Long] {
   //  all ints in the JVM are 8 bytes = 64 bit
-  def toBytes(data:Long) = ByteBuffer.allocateDirect(8).putLong(data).array()
+  def toBytes(data:Long) = ByteBuffer.allocate(8).putLong(data).array()
   def fromBytes(bytes:Array[Byte]) = tryo { ByteBuffer.wrap(bytes).getLong }
 }
