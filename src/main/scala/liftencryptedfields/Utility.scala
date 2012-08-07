@@ -4,11 +4,11 @@ import java.security.SecureRandom
 import net.liftweb.util.ControlHelpers.tryo
 import net.liftweb.util.SecurityHelpers
 import org.bouncycastle.crypto.digests.SHA512Digest
-import org.bouncycastle.crypto.engines.AESEngine
+import org.bouncycastle.crypto.engines.AESFastEngine
 import org.bouncycastle.crypto.generators.PKCS5S2ParametersGenerator
 import org.bouncycastle.crypto.macs.HMac
 import org.bouncycastle.crypto.modes.GCMBlockCipher
-import org.bouncycastle.crypto.params.{KeyParameter, ParametersWithIV}
+import org.bouncycastle.crypto.params.{KeyParameter, AEADParameters}
 
 object Utility {
   object Random {
@@ -27,8 +27,8 @@ object Utility {
     val iv = new Array[Byte](32)
     Random.nextBytes(iv)
 
-    val encrypter = new GCMBlockCipher(new AESEngine())
-    encrypter.init(true, new ParametersWithIV(new KeyParameter(key), iv))
+    val encrypter = new GCMBlockCipher(new AESFastEngine())
+    encrypter.init(true, new AEADParameters(new KeyParameter(key), 128, iv, Array[Byte]()))
 
     val output = new Array[Byte](encrypter.getOutputSize(plainText.length))
     val cipherLength = encrypter.processBytes(plainText, 0, plainText.length, output, 0)
@@ -41,8 +41,8 @@ object Utility {
     val cipherText = new Array[Byte](cipherTextWithIV.length - 32)
     Array.copy(cipherTextWithIV, 32, cipherText, 0, cipherTextWithIV.length - 32)
 
-    val decrypter = new GCMBlockCipher(new AESEngine())
-    decrypter.init(false, new ParametersWithIV(new KeyParameter(key), iv))
+    val decrypter = new GCMBlockCipher(new AESFastEngine())
+    decrypter.init(false, new AEADParameters(new KeyParameter(key), 128, iv, Array[Byte]()))
     val output = new Array[Byte](decrypter.getOutputSize(cipherText.length))
     val cipherLength = decrypter.processBytes(cipherText, 0, cipherText.length, output, 0)
     decrypter.doFinal(output, cipherLength);
