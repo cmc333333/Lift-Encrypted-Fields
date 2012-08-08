@@ -7,7 +7,7 @@ import org.bouncycastle.crypto.digests.SHA512Digest
 import org.bouncycastle.crypto.engines.AESFastEngine
 import org.bouncycastle.crypto.generators.PKCS5S2ParametersGenerator
 import org.bouncycastle.crypto.macs.HMac
-import org.bouncycastle.crypto.modes.GCMBlockCipher
+import org.bouncycastle.crypto.modes.EAXBlockCipher
 import org.bouncycastle.crypto.params.{KeyParameter, AEADParameters}
 
 object Utility {
@@ -27,7 +27,7 @@ object Utility {
     val iv = new Array[Byte](32)
     Random.nextBytes(iv)
 
-    val encrypter = new GCMBlockCipher(new AESFastEngine())
+    val encrypter = new EAXBlockCipher(new AESFastEngine())
     encrypter.init(true, new AEADParameters(new KeyParameter(key), 128, iv, Array[Byte]()))
 
     val output = new Array[Byte](encrypter.getOutputSize(plainText.length))
@@ -41,7 +41,7 @@ object Utility {
     val cipherText = new Array[Byte](cipherTextWithIV.length - 32)
     Array.copy(cipherTextWithIV, 32, cipherText, 0, cipherTextWithIV.length - 32)
 
-    val decrypter = new GCMBlockCipher(new AESFastEngine())
+    val decrypter = new EAXBlockCipher(new AESFastEngine())
     decrypter.init(false, new AEADParameters(new KeyParameter(key), 128, iv, Array[Byte]()))
     val output = new Array[Byte](decrypter.getOutputSize(cipherText.length))
     val cipherLength = decrypter.processBytes(cipherText, 0, cipherText.length, output, 0)
