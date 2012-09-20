@@ -1,6 +1,7 @@
 package info.cmlubinski.liftencryptedfields
 
 import java.security.SecureRandom
+import net.liftweb.common.Box
 import net.liftweb.util.ControlHelpers.tryo
 import net.liftweb.util.SecurityHelpers
 import org.bouncycastle.crypto.digests.SHA512Digest
@@ -23,9 +24,18 @@ object Utility {
     }
   }
 
-  def aesEncrypt(plainText:Array[Byte], key:Array[Byte]) = {
-    val iv = new Array[Byte](32)
-    Random.nextBytes(iv)
+  def aesEncrypt(plainText:Array[Byte], key:Array[Byte]):Array[Byte] = aesEncrypt(plainText, key, None)
+  def aesEncrypt(plainText:Array[Byte], key:Array[Byte], iv:Array[Byte]):Array[Byte] = 
+    aesEncrypt(plainText, key, Some(iv))
+  def aesEncrypt(plainText:Array[Byte], key:Array[Byte], _iv:Option[Array[Byte]]) = {
+    val iv = _iv match {
+      case Some(_iv) => _iv
+      case None => {
+        val iv = new Array[Byte](32)
+        Random.nextBytes(iv)
+        iv
+      }
+    }
 
     val encrypter = new EAXBlockCipher(new AESFastEngine())
     encrypter.init(true, new AEADParameters(new KeyParameter(key), 128, iv, Array[Byte]()))
@@ -33,14 +43,19 @@ object Utility {
     val output = new Array[Byte](encrypter.getOutputSize(plainText.length))
     val cipherLength = encrypter.processBytes(plainText, 0, plainText.length, output, 0)
     encrypter.doFinal(output, cipherLength)
-    Array.concat(iv, output)
+    if (_iv.isDefined)
+      output
+    else
+      Array.concat(iv, output)
   }
-  def aesDecrypt(cipherTextWithIV:Array[Byte], key:Array[Byte]) = tryo {
+  def aesDecrypt(cipherTextWithIV:Array[Byte], key:Array[Byte]):Box[Array[Byte]] = tryo {
     val iv = new Array[Byte](32)
     Array.copy(cipherTextWithIV, 0, iv, 0, 32)
     val cipherText = new Array[Byte](cipherTextWithIV.length - 32)
     Array.copy(cipherTextWithIV, 32, cipherText, 0, cipherTextWithIV.length - 32)
-
+    (cipherText, iv)
+  }.flatMap{ case (cipherText, iv) => aesDecrypt(cipherText, iv, key) }
+  def aesDecrypt(cipherText:Array[Byte], iv:Array[Byte], key:Array[Byte]) = tryo {
     val decrypter = new EAXBlockCipher(new AESFastEngine())
     decrypter.init(false, new AEADParameters(new KeyParameter(key), 128, iv, Array[Byte]()))
     val output = new Array[Byte](decrypter.getOutputSize(cipherText.length))
